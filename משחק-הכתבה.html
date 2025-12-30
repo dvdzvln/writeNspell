@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק הכתבה לליעד</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            max-width: 1200px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .score {
+            font-size: 1.3em;
+            color: #764ba2;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .puzzle-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .puzzle-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .puzzle-piece {
+            width: 70px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: transparent;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .puzzle-piece.revealed {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border: 3px solid #fff;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: pieceReveal 0.6s ease-out;
+            box-shadow: 0 5px 15px rgba(251, 191, 36, 0.5);
+        }
+
+        @keyframes pieceReveal {
+            0% {
+                transform: rotateY(90deg) scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: rotateY(45deg) scale(1.1);
+            }
+            100% {
+                transform: rotateY(0deg) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .puzzle-piece.space {
+            width: 20px;
+            background: transparent;
+            border: none;
+        }
+
+        .image-container {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 280px;
+            border-radius: 15px;
+            object-fit: contain;
+        }
+
+        .speak-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            font-size: 2em;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.6);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .speak-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6);
+        }
+
+        .speak-btn:active {
+            transform: scale(0.95);
+        }
+
+        .speak-btn.speaking {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .input-container {
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 18px;
+            font-size: 1.8em;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            text-align: center;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            display: none;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(240, 147, 251, 0.4);
+        }
+
+        .feedback {
+            font-size: 1.8em;
+            font-weight: bold;
+            min-height: 40px;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .feedback.correct {
+            color: #10b981;
+            animation: bounce 0.5s;
+        }
+
+        .feedback.incorrect {
+            color: #ef4444;
+            animation: shake 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .completion-screen {
+            display: none;
+        }
+
+        .completion-screen.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .trophy {
+            font-size: 5em;
+            margin: 20px 0;
+        }
+
+        .final-score {
+            font-size: 2em;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .success-list {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-width: 350px;
+            max-width: 400px;
+        }
+
+        .success-list h2 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 3px solid #f093fb;
+            padding-bottom: 10px;
+        }
+
+        .success-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .success-list li {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            font-size: 2.0em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(240, 147, 251, 0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .success-list .empty-message {
+            color: #999;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+            .main-content {
+                flex-direction: column;
+            }
+            .success-list {
+                max-width: 600px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="success-list">
+            <h2>🌟 מִלִּים שֶׁאִיַּיְתְּ נָכוֹן 🌟</h2>
+            <ul id="successList">
+                <div class="empty-message">עֲדַיִן לֹא אִיַּיְתְּ אַף מִלָּה.<br>בּוֹאִי נַתְחִיל!</div>
+            </ul>
+        </div>
+        <div class="game-container">
+        <div id="gameScreen">
+            <h1>🎵 מִשְׂחַק הַכְּתָּבָה 🎵</h1>
+            <div class="score">נִיקּוּד: <span id="score">0</span> מִתּוֹך <span id="total">11</span></div>
+            
+            <div class="puzzle-container" id="puzzle">
+                <div class="puzzle-row">
+                    <div class="puzzle-piece" data-index="0">כ</div>
+                    <div class="puzzle-piece" data-index="1">ל</div>
+                </div>
+                <div class="puzzle-row">
+                    <div class="puzzle-piece" data-index="2">ה</div>
+                    <div class="puzzle-piece" data-index="3">כ</div>
+                    <div class="puzzle-piece" data-index="4">ב</div>
+                    <div class="puzzle-piece" data-index="5">ו</div>
+                    <div class="puzzle-piece" data-index="6">ד</div>
+                </div>
+                <div class="puzzle-row">
+                    <div class="puzzle-piece" data-index="7">ל</div>
+                    <div class="puzzle-piece" data-index="8">י</div>
+                    <div class="puzzle-piece" data-index="9">ע</div>
+                    <div class="puzzle-piece" data-index="10">ד</div>
+                </div>
+            </div>
+            
+            <div class="image-container">
+                <img id="wordImage" src="" alt="תמונה">
+                <button class="speak-btn" id="speakBtn" title="הַקְרָאַת הַמִּלָּה">🔊</button>
+            </div>
+
+            <div class="input-container">
+                <input type="text" id="answerInput" placeholder="הַקְלִידִי אֶת הַמִּלָּה כָּאָן..." autocomplete="off">
+            </div>
+
+            <div class="button-container">
+                <button class="check-btn" id="checkBtn">בִּדְקִי!</button>
+                <button class="next-btn" id="nextBtn">הַמִּלָּה הַבָּאָה</button>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <div class="completion-screen" id="completionScreen">
+            <h1>כָּל הַכָּבוֹד לְיִעַד!</h1>
+            <div class="trophy">🏆</div>
+            <div class="final-score">סִיַּמְתְ אֶת כָּל הַמִּלִּים!</div>
+            <div class="final-score">הַנִּיקּוּד שֶלָּך: <span id="finalScore"></span> מִתּוֹך 11</div>
+            <button class="restart-btn" id="restartBtn">שִׂחֲקִי שוּב</button>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        const words = [
+            { word: "פסנתר", withNikud: "פְּסַנְתֵּר", wordForSpeech: "פסנתר", image: "piano.png" },
+            { word: "תף", withNikud: "תֹּף", wordForSpeech: "תוף", image: "cartoon-icon-of-drum-instrument-icon-of-music-drum-cartoon-vector.jpg" },
+            { word: "מצלתים", withNikud: "מְצִלְתַּיִם", wordForSpeech: "מצילתיים", image: "cymbals.png" },
+            { word: "תוים", withNikud: "תָּוִים", wordForSpeech: "תווים", image: "cartoon-multi-colored-musical-notes-or-color-illustration-vector.jpg" },
+            { word: "תרועה", withNikud: "תְּרוּעָה", wordForSpeech: "תרועה", image: "תרועה.gif" },
+            { word: "תזמרת", withNikud: "תִּזְמֹרֶת", wordForSpeech: "תיזמורת", image: "orchestra.png" },
+            { word: "תקליט", withNikud: "תַּקְלִיט", wordForSpeech: "תקליט", image: "תקליט.png" },
+            { word: "מקלדת", withNikud: "מִקְלֶדֶת", wordForSpeech: "מקלדת", image: "keyboard.avif" },
+            { word: "תבה", withNikud: "תֵּבָה", wordForSpeech: "תיבה", image: "תיבה.gif" },
+            { word: "נגינה", withNikud: "נְגִינָה", wordForSpeech: "נגינה", image: "play music.gif" },
+            { word: "תפים", withNikud: "תֻּפִּים", wordForSpeech: "תופים", image: "drum-set.jpg" }
+        ];
+
+        let currentWordIndex = 0;
+        let score = 0;
+        let answeredCorrectly = false;
+        let successfulWords = [];
+
+        const wordImage = document.getElementById('wordImage');
+        const answerInput = document.getElementById('answerInput');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const feedback = document.getElementById('feedback');
+        const scoreDisplay = document.getElementById('score');
+        const speakBtn = document.getElementById('speakBtn');
+        const gameScreen = document.getElementById('gameScreen');
+        const completionScreen = document.getElementById('completionScreen');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const restartBtn = document.getElementById('restartBtn');
+        const successList = document.getElementById('successList');
+
+        function addToSuccessList(wordWithNikud) {
+            successfulWords.push(wordWithNikud);
+            updateSuccessList();
+            revealPuzzlePiece(successfulWords.length - 1);
+        }
+
+        function revealPuzzlePiece(index) {
+            const pieces = document.querySelectorAll('.puzzle-piece[data-index]');
+            if (index < pieces.length) {
+                setTimeout(() => {
+                    pieces[index].classList.add('revealed');
+                }, 300);
+            }
+        }
+
+        function updateSuccessList() {
+            if (successfulWords.length === 0) {
+                successList.innerHTML = '<div class="empty-message">עֲדַיִן לֹא אִיַּיְתְּ אַף מִלָּה.<br>בּוֹאִי נַתְחִיל!</div>';
+            } else {
+                successList.innerHTML = successfulWords.map((word, index) => `<li>${index + 1}. ${word}</li>`).join('');
+            }
+        }
+
+        // Shuffle words for variety
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        shuffleArray(words);
+
+        function loadWord() {
+            if (currentWordIndex >= words.length) {
+                showCompletionScreen();
+                return;
+            }
+
+            const currentWord = words[currentWordIndex];
+            wordImage.src = currentWord.image;
+            answerInput.value = '';
+            answerInput.disabled = false;
+            answerInput.readOnly = false;
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            checkBtn.style.display = 'inline-block';
+            nextBtn.style.display = 'none';
+            answeredCorrectly = false;
+            answerInput.focus();
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim();
+            const correctAnswer = words[currentWordIndex].word;
+
+            if (userAnswer === '') {
+                feedback.textContent = 'אָנָּא הַקְלִידִי תְּשוּבָה';
+                feedback.className = 'feedback incorrect';
+                return;
+            }
+
+            if (userAnswer === correctAnswer) {
+                if (!answeredCorrectly) {
+                    score++;
+                    scoreDisplay.textContent = score;
+                    answeredCorrectly = true;
+                    const wordWithNikud = words[currentWordIndex].withNikud;
+                    addToSuccessList(wordWithNikud);
+                }
+                const wordWithNikud = words[currentWordIndex].withNikud;
+                answerInput.value = wordWithNikud;
+                answerInput.readOnly = true;
+                feedback.innerHTML = `✓ מְעֻלָּה! תְּשוּבָה נְכוֹנָה!<br><span style="font-size: 1.5em; color: #667eea; margin-top: 10px; display: inline-block;">${wordWithNikud}</span>`;
+                feedback.className = 'feedback correct';
+
+                checkBtn.style.display = 'none';
+                nextBtn.style.display = 'inline-block';
+            } else {
+                feedback.textContent = `✗ לֹא נָכוֹן. נַסִּי שוּב!`;
+                feedback.className = 'feedback incorrect';
+                answerInput.select();
+            }
+        }
+
+        function nextWord() {
+            currentWordIndex++;
+            loadWord();
+        }
+
+        function showCompletionScreen() {
+            gameScreen.style.display = 'none';
+            completionScreen.classList.add('show');
+            finalScoreDisplay.textContent = score;
+        }
+
+        function restartGame() {
+            currentWordIndex = 0;
+            score = 0;
+            successfulWords = [];
+            scoreDisplay.textContent = score;
+            updateSuccessList();
+            
+            // Reset puzzle
+            const pieces = document.querySelectorAll('.puzzle-piece[data-index]');
+            pieces.forEach(piece => {
+                piece.classList.remove('revealed');
+            });
+            
+            shuffleArray(words);
+            gameScreen.style.display = 'block';
+            completionScreen.classList.remove('show');
+            loadWord();
+        }
+
+        // Text-to-Speech function
+        function speakWord() {
+            if (!('speechSynthesis' in window)) {
+                alert('הדפדפן שלך לא תומך בהקראת טקסט.');
+                return;
+            }
+
+            const currentWordData = words[currentWordIndex];
+            const wordToSpeak = currentWordData.wordForSpeech || currentWordData.word;
+            
+            // Only cancel if something is currently speaking
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                // Wait a bit for the cancel to complete
+                setTimeout(() => speakWord(), 100);
+                return;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(wordToSpeak);
+            
+            // Set Hebrew language - browser will use installed Hebrew voice
+            utterance.lang = 'he-IL';
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Try to find and set Hebrew voice explicitly
+            const voices = speechSynthesis.getVoices();
+            const hebrewVoice = voices.find(voice => 
+                voice.lang.includes('he') || 
+                voice.lang.includes('iw') ||
+                voice.name.toLowerCase().includes('hebrew') ||
+                voice.name.includes('עברית')
+            );
+            
+            if (hebrewVoice) {
+                utterance.voice = hebrewVoice;
+                console.log('Using Hebrew voice:', hebrewVoice.name);
+            }
+            
+            speakBtn.classList.add('speaking');
+            
+            utterance.onend = () => {
+                speakBtn.classList.remove('speaking');
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('Speech error:', event.error);
+                speakBtn.classList.remove('speaking');
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        // Load voices on page load - with retry
+        let voicesLoaded = false;
+        
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                voicesLoaded = true;
+                console.log('Voices loaded:', voices.length);
+                console.log('Hebrew voices:', voices.filter(v => 
+                    v.lang.includes('he') || v.lang.includes('iw') || 
+                    v.name.toLowerCase().includes('hebrew')
+                ).map(v => v.name));
+            }
+        }
+        
+        if ('speechSynthesis' in window) {
+            // Try loading immediately
+            loadVoices();
+            // And register for when voices change
+            speechSynthesis.onvoiceschanged = loadVoices;
+            // Also try again after a delay
+            setTimeout(loadVoices, 1000);
+        }
+
+        // Event listeners
+        checkBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', nextWord);
+        restartBtn.addEventListener('click', restartGame);
+        speakBtn.addEventListener('click', speakWord);
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (checkBtn.style.display !== 'none') {
+                    checkAnswer();
+                } else {
+                    nextWord();
+                }
+            }
+        });
+
+        // Load first word
+        loadWord();
+    </script>
+</body>
+</html>
